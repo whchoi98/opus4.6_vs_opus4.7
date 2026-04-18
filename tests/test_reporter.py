@@ -3,7 +3,7 @@ from pathlib import Path
 
 from clients.base import CallResult
 from stats import aggregate_results
-from reporter import write_raw_json, write_aggregated_json
+from reporter import write_raw_json, write_aggregated_json, write_markdown_report
 
 
 def _make_result(run_index=0, test_id="test_1", effort="low"):
@@ -41,3 +41,21 @@ def test_write_aggregated_json(tmp_path: Path):
     assert entry["n_runs"] == 5
     assert entry["n_success"] == 5
     assert entry["input_tokens_mean"] == 37.0
+
+
+def test_write_markdown_report(tmp_path: Path):
+    results = [_make_result(i) for i in range(5)]
+    agg = aggregate_results(results)
+    out = tmp_path / "report.md"
+    meta = {
+        "sdk_version": "0.96.0", "region": "us-east-1",
+        "backends": ["bedrock_runtime"],
+        "total_calls": 5, "total_cost_usd": 0.025,
+        "wall_time_s": 15.2, "start_ts": "2026-04-18T12:00:00",
+    }
+    write_markdown_report(results, agg, meta, out)
+    text = out.read_text()
+    assert "Opus 4.7 vs 4.6 Benchmark Report" in text
+    assert "sdk_version" in text or "SDK" in text
+    assert "Test 1" in text
+    assert "37" in text
