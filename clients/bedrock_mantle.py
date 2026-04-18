@@ -45,8 +45,12 @@ class BedrockMantleClient:
         self._region = region
         self._auth_method = auth_method
         self._url = config.MANTLE_URL
-        self._credentials = Session().get_credentials()
-        if self._credentials is None:
+        # Cache the Session only (lightweight). Credentials are re-fetched per invoke
+        # so that RefreshableCredentials auto-refresh (from IMDS, STS, etc.) works
+        # for long-running processes.
+        self._session = Session()
+        # Fail fast if no credentials are available at client creation time
+        if self._session.get_credentials() is None:
             raise RuntimeError(
                 "No AWS credentials found for Mantle client. "
                 "Set AWS_PROFILE / AWS_ACCESS_KEY_ID / AWS_BEARER_TOKEN_BEDROCK."
@@ -74,7 +78,11 @@ class BedrockMantleClient:
             method="POST", url=self._url, data=data,
             headers={"Content-Type": "application/json"},
         )
-        SigV4Auth(self._credentials, "bedrock-mantle", self._region).add_auth(aws_req)
+        # Fetch fresh credentials per-invoke — this triggers auto-refresh on
+        # RefreshableCredentials objects (e.g. EC2 IMDS, AssumeRole) if the
+        # cached values have expired.
+        credentials = self._session.get_credentials()
+        SigV4Auth(credentials, "bedrock-mantle", self._region).add_auth(aws_req)
 
         t0 = time.perf_counter()
         resp = requests.post(self._url, data=data, headers=dict(aws_req.headers), timeout=60)
