@@ -1,5 +1,5 @@
 """Collect test cases from case modules based on CLI selection."""
-from cases import effort, length, tools, mantle, caching, multiturn, streaming
+from cases import effort, length, tools, mantle, caching, multiturn, streaming, tools_scaling
 from cases.base import TestCase
 
 
@@ -11,6 +11,7 @@ TEST_MODULES = {
     "5": caching,
     "6": multiturn,
     "7": streaming,
+    "8": tools_scaling,
 }
 
 

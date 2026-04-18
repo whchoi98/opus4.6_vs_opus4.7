@@ -46,11 +46,11 @@ def parse_args() -> argparse.Namespace:
 
 def resolve_tests(test_arg: str) -> list[str]:
     if test_arg == "all":
-        return ["1", "2", "3", "4", "5", "6", "7"]
+        return ["1", "2", "3", "4", "5", "6", "7", "8"]
     ids = [t.strip() for t in test_arg.split(",")]
     for t in ids:
-        if t not in ("1", "2", "3", "4", "5", "6", "7"):
-            console.print(f"[red]Unknown test id: {t}. Valid: 1,2,3,4,5,6,7 or all[/red]")
+        if t not in ("1", "2", "3", "4", "5", "6", "7", "8"):
+            console.print(f"[red]Unknown test id: {t}. Valid: 1,2,3,4,5,6,7,8 or all[/red]")
             sys.exit(2)
     return ids
 

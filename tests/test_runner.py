@@ -3,8 +3,8 @@ from runner.preflight import check_auth_env
 
 
 def test_collect_cases_all():
-    cs = collect_cases(selected=["1", "2", "3", "4", "5", "6", "7"])
-    assert len(cs) == 35  # 5 + 4 + 2 + 10 + 2 + 8 + 4
+    cs = collect_cases(selected=["1", "2", "3", "4", "5", "6", "7", "8"])
+    assert len(cs) == 41  # 5 + 4 + 2 + 10 + 2 + 8 + 4 + 6
 
 
 def test_collect_cases_subset():

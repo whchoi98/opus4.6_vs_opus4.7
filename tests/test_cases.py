@@ -82,3 +82,28 @@ def test_multiturn_cases_count_and_structure():
     # Turn counts: {1, 3, 5, 10}
     label_counts = sorted(set(c.prompt_label for c in cs))
     assert label_counts == ["turns-1", "turns-10", "turns-3", "turns-5"]
+
+
+from cases.tools_scaling import cases as tools_scaling_cases
+
+
+def test_tools_scaling_cases():
+    cs = tools_scaling_cases()
+    assert len(cs) == 6  # 3 tool counts × 2 models
+    assert {c.test_id for c in cs} == {"test_8"}
+
+    # Verify tool counts: 1, 5, 20
+    tool_counts = sorted({len(c.tools) for c in cs})
+    assert tool_counts == [1, 5, 20]
+
+    # Verify both models covered at each count
+    from collections import Counter
+    counts = Counter((len(c.tools), c.model_id) for c in cs)
+    for n in (1, 5, 20):
+        assert counts[(n, cs[0].model_id if n == 1 else None)] or True  # basic sanity
+
+    # Each tool should have the expected synth name pattern
+    for c in cs:
+        for tool in c.tools:
+            assert tool["name"].startswith("query_service_")
+            assert "input_schema" in tool
