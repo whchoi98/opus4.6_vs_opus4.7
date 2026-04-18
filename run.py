@@ -51,11 +51,12 @@ def resolve_tests(test_arg: str) -> list[str]:
     # the Bedrock cache API shape is clarified. Runnable explicitly with
     # `--test 5` for investigation.
     if test_arg == "all":
-        return ["1", "2", "3", "4", "6", "7", "8", "9", "10", "11", "12"]
+        return ["1","2","3","4","6","7","8","9","10","11","12","13"]
     ids = [t.strip() for t in test_arg.split(",")]
+    valid = ("1","2","3","4","5","6","7","8","9","10","11","12","13")
     for t in ids:
-        if t not in ("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"):
-            console.print(f"[red]Unknown test id: {t}. Valid: 1,2,3,4,5,6,7,8,9,10,11,12 or all[/red]")
+        if t not in valid:
+            console.print(f"[red]Unknown test id: {t}. Valid: 1..13 or all[/red]")
             sys.exit(2)
     return ids
 

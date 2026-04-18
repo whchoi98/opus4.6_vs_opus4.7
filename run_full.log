@@ -1,0 +1,7 @@
+Plan: 21 cases × 5 runs = 105 calls
+Estimated cost: ~$0.93
+Estimated wall time: ~4–9 min
+
+Results dir: results/2026-04-18-0603
+Smoke: calling Opus 4.6 via runtime with 'ping'…
+Smoke OK — 8/19 tokens, 2.31s

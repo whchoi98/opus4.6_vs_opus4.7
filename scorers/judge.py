@@ -21,7 +21,7 @@ import config
 from clients.bedrock_runtime import BedrockRuntimeClient
 
 
-JUDGE_MODEL = "global.anthropic.claude-sonnet-4-6-v1"
+JUDGE_MODEL = "global.anthropic.claude-sonnet-4-6"
 
 
 @dataclass(frozen=True)

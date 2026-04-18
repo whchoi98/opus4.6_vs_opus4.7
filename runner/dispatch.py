@@ -2,7 +2,7 @@
 from cases import (
     effort, length, tools, mantle, caching, multiturn, streaming,
     tools_scaling, tool_forcing, multiturn_extreme, language_code,
-    system_caching,
+    system_caching, multiturn_knee,
 )
 from cases.base import TestCase
 
@@ -20,6 +20,7 @@ TEST_MODULES = {
     "10": multiturn_extreme,
     "11": language_code,
     "12": system_caching,
+    "13": multiturn_knee,
 }
 
 
