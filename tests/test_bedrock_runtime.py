@@ -38,3 +38,15 @@ def test_build_kwargs_with_tools():
         prompt="hello", max_tokens=100, effort=None, tools=tools,
     )
     assert k["tools"] == tools
+
+
+def test_build_kwargs_with_cache():
+    k = build_kwargs(
+        model_id="global.anthropic.claude-opus-4-7",
+        prompt="hi", max_tokens=100, effort=None, tools=None, use_cache=True,
+    )
+    msg = k["messages"][0]
+    assert msg["role"] == "user"
+    assert isinstance(msg["content"], list)
+    assert msg["content"][0]["type"] == "text"
+    assert msg["content"][0]["cache_control"] == {"type": "ephemeral"}

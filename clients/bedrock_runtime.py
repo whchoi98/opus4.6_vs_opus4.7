@@ -17,17 +17,26 @@ def build_kwargs(
     max_tokens: int,
     effort: Optional[str],
     tools: Optional[list[dict]],
+    use_cache: bool = False,
 ) -> dict:
     """Build the kwargs dict for anthropic.AnthropicBedrock.messages.create.
 
     Handles the API shape divergence between Opus 4.7 (thinking.adaptive +
     output_config.effort) and Opus 4.6 (no thinking kwarg by default).
+    When use_cache=True, wraps the user message content in a list with
+    cache_control={"type": "ephemeral"} to enable prompt caching.
     """
     kwargs: dict = {
         "model": model_id,
         "max_tokens": max_tokens,
-        "messages": [{"role": "user", "content": prompt}],
     }
+    if use_cache:
+        kwargs["messages"] = [{
+            "role": "user",
+            "content": [{"type": "text", "text": prompt, "cache_control": {"type": "ephemeral"}}],
+        }]
+    else:
+        kwargs["messages"] = [{"role": "user", "content": prompt}]
     if tools:
         kwargs["tools"] = tools
     if "opus-4-7" in model_id and effort:
@@ -53,10 +62,11 @@ class BedrockRuntimeClient:
         tools: Optional[list[dict]] = None,
         run_index: int = 0,
         test_id: str = "",
+        use_cache: bool = False,
     ) -> CallResult:
         kwargs = build_kwargs(
             model_id=model_id, prompt=prompt, max_tokens=max_tokens,
-            effort=effort, tools=tools,
+            effort=effort, tools=tools, use_cache=use_cache,
         )
         t0 = time.perf_counter()
         resp = self._client.messages.create(**kwargs)
@@ -65,6 +75,8 @@ class BedrockRuntimeClient:
             "usage": {
                 "input_tokens": resp.usage.input_tokens,
                 "output_tokens": resp.usage.output_tokens,
+                "cache_creation_input_tokens": getattr(resp.usage, "cache_creation_input_tokens", 0) or 0,
+                "cache_read_input_tokens": getattr(resp.usage, "cache_read_input_tokens", 0) or 0,
             },
             "content": [_block_to_dict(b) for b in resp.content],
             "stop_reason": resp.stop_reason,

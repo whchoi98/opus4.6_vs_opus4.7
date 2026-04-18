@@ -83,3 +83,27 @@ def test_parse_bedrock_response_counts_tool_uses():
     )
     assert r.tool_calls_count == 4
     assert r.stop_reason == "tool_use"
+
+
+def test_parse_bedrock_response_with_cache():
+    resp = {
+        "usage": {
+            "input_tokens": 100,
+            "output_tokens": 50,
+            "cache_creation_input_tokens": 2000,
+            "cache_read_input_tokens": 0,
+        },
+        "content": [{"type": "text", "text": "hi"}],
+        "stop_reason": "end_turn",
+    }
+    r = parse_bedrock_response(
+        resp, latency_s=1.0, backend="bedrock_runtime",
+        auth_method="iam_role",
+        model_id="global.anthropic.claude-opus-4-7",
+        effort=None, prompt_label="cache", run_index=0, test_id="test_5",
+    )
+    assert r.cache_creation_tokens == 2000
+    assert r.cache_read_tokens == 0
+    # Cost includes cache write at 1.25x
+    expected = (100 / 1e6 * 5.0) + (50 / 1e6 * 25.0) + (2000 / 1e6 * 5.0 * 1.25)
+    assert abs(r.cost_usd - expected) < 1e-9

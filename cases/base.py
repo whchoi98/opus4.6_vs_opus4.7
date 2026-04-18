@@ -18,3 +18,4 @@ class TestCase:
     tools: Optional[list[dict]] = field(default=None)
     endpoint: Optional[str] = None
     auth_method: str = "iam_role"
+    use_cache: bool = False

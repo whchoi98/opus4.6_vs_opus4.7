@@ -57,7 +57,7 @@ def execute_case_with_retry(
     last_exc: Exception | None = None
     for attempt in range(max_attempts):
         try:
-            return client.invoke(
+            invoke_kwargs = dict(
                 model_id=case.model_id,
                 prompt=case.prompt,
                 prompt_label=case.prompt_label,
@@ -67,6 +67,10 @@ def execute_case_with_retry(
                 run_index=run_index,
                 test_id=case.test_id,
             )
+            # Only bedrock_runtime supports caching currently
+            if case.backend == "bedrock_runtime" and case.use_cache:
+                invoke_kwargs["use_cache"] = True
+            return client.invoke(**invoke_kwargs)
         except anthropic.RateLimitError as e:
             last_exc = e
         except anthropic.APIStatusError as e:
