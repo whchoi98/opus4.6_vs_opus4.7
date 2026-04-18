@@ -3,7 +3,3 @@ testpaths = ["tests"]
 python_files = "test_*.py"
 python_classes = "Test*"
 python_functions = "test_*"
-
-[tool.pytest.ini_options.env]
-ANTHROPIC_API_KEY = "dummy-for-unit-tests"
-AWS_REGION = "us-east-1"
