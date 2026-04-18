@@ -16,14 +16,14 @@ mkdir -p .git/hooks
 
 cat > .git/hooks/commit-msg << 'EOF'
 #!/bin/bash
-# Strips Co-Authored-By lines from commit messages.
-# Keeps AI assistants out of the contributor list.
+# Strips Co-Authored-By lines (any case) from commit messages.
+# Keeps AI assistants (Claude, Copilot, etc.) out of the contributor list.
 MSG_FILE="$1"
-grep -v '^Co-[Aa]uthored-[Bb]y:' "$MSG_FILE" > "$MSG_FILE.tmp" && mv "$MSG_FILE.tmp" "$MSG_FILE"
+grep -iv '^co-authored-by:' "$MSG_FILE" > "$MSG_FILE.tmp" && mv "$MSG_FILE.tmp" "$MSG_FILE"
 exit 0
 EOF
 chmod +x .git/hooks/commit-msg
-echo "Installed: commit-msg (strips Co-Authored-By lines)"
+echo "Installed: commit-msg (strips Co-Authored-By lines, case-insensitive)"
 
 cat > .git/hooks/pre-push << 'EOF'
 #!/bin/bash
