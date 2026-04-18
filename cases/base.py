@@ -22,3 +22,5 @@ class TestCase:
     messages_override: Optional[list[dict]] = field(default=None)
     streaming: bool = False
     tool_choice: Optional[dict] = field(default=None)
+    system_prompt: Optional[str] = None
+    system_cached: bool = False  # When True, add cache_control to system prompt block

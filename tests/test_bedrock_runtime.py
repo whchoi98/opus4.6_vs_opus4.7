@@ -76,3 +76,23 @@ def test_build_kwargs_with_messages_override():
         messages_override=msgs,
     )
     assert k["messages"] == msgs
+
+
+def test_build_kwargs_with_system_cached():
+    k = build_kwargs(
+        model_id="global.anthropic.claude-opus-4-7",
+        prompt="hi", max_tokens=100, effort=None, tools=None,
+        system_prompt="You are an assistant.", system_cached=True,
+    )
+    assert isinstance(k["system"], list)
+    assert k["system"][0]["type"] == "text"
+    assert k["system"][0]["cache_control"] == {"type": "ephemeral"}
+
+
+def test_build_kwargs_with_system_plain():
+    k = build_kwargs(
+        model_id="global.anthropic.claude-opus-4-7",
+        prompt="hi", max_tokens=100, effort=None, tools=None,
+        system_prompt="You are an assistant.", system_cached=False,
+    )
+    assert k["system"] == "You are an assistant."

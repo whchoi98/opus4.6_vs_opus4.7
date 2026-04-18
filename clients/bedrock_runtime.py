@@ -41,6 +41,8 @@ def build_kwargs(
     use_cache: bool = False,
     messages_override: Optional[list[dict]] = None,
     tool_choice: Optional[dict] = None,
+    system_prompt: Optional[str] = None,
+    system_cached: bool = False,
 ) -> dict:
     """Build the kwargs dict for anthropic.AnthropicBedrock.messages.create.
 
@@ -68,6 +70,15 @@ def build_kwargs(
         kwargs["tools"] = tools
     if tool_choice is not None:
         kwargs["tool_choice"] = tool_choice
+    if system_prompt is not None:
+        if system_cached:
+            kwargs["system"] = [{
+                "type": "text",
+                "text": system_prompt,
+                "cache_control": {"type": "ephemeral"},
+            }]
+        else:
+            kwargs["system"] = system_prompt
     if "opus-4-7" in model_id and effort:
         kwargs["thinking"] = {"type": "adaptive"}
         kwargs["extra_body"] = {"output_config": {"effort": effort}}
@@ -136,11 +147,14 @@ class BedrockRuntimeClient:
         use_cache: bool = False,
         messages_override: Optional[list[dict]] = None,
         tool_choice: Optional[dict] = None,
+        system_prompt: Optional[str] = None,
+        system_cached: bool = False,
     ) -> CallResult:
         kwargs = build_kwargs(
             model_id=model_id, prompt=prompt, max_tokens=max_tokens,
             effort=effort, tools=tools, use_cache=use_cache,
             messages_override=messages_override, tool_choice=tool_choice,
+            system_prompt=system_prompt, system_cached=system_cached,
         )
         t0 = time.perf_counter()
         resp = self._client.messages.create(**kwargs)
@@ -174,11 +188,14 @@ class BedrockRuntimeClient:
         run_index: int = 0,
         test_id: str = "",
         tool_choice: Optional[dict] = None,
+        system_prompt: Optional[str] = None,
+        system_cached: bool = False,
     ) -> CallResult:
         """Invoke via streaming, measuring TTFT (time to first content event)."""
         kwargs = build_kwargs(
             model_id=model_id, prompt=prompt, max_tokens=max_tokens,
             effort=effort, tools=tools, tool_choice=tool_choice,
+            system_prompt=system_prompt, system_cached=system_cached,
         )
 
         t0 = time.perf_counter()

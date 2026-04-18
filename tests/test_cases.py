@@ -153,3 +153,17 @@ def test_tools_scaling_cases():
         for tool in c.tools:
             assert tool["name"].startswith("query_service_")
             assert "input_schema" in tool
+
+
+from cases.system_caching import cases as system_caching_cases
+
+
+def test_system_caching_cases():
+    cs = system_caching_cases()
+    assert len(cs) == 2
+    assert {c.test_id for c in cs} == {"test_12"}
+    for c in cs:
+        assert c.system_prompt is not None
+        assert c.system_cached is True
+        # System prompt should be substantive (>1500 chars to clear cache minimums)
+        assert len(c.system_prompt) > 1500

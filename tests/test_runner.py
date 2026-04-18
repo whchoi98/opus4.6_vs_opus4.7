@@ -3,8 +3,8 @@ from runner.preflight import check_auth_env
 
 
 def test_collect_cases_all():
-    cs = collect_cases(selected=["1","2","3","4","5","6","7","8","9","10","11"])
-    assert len(cs) == 67  # 5+4+2+10+2+8+4+6+8+10+8
+    cs = collect_cases(selected=["1","2","3","4","5","6","7","8","9","10","11","12"])
+    assert len(cs) == 69  # 67 + 2
 
 
 def test_collect_cases_subset():
@@ -17,7 +17,7 @@ def test_resolve_tests_all_excludes_deferred():
     from run import resolve_tests
     ids = resolve_tests("all")
     assert "5" not in ids
-    assert set(ids) == {"1","2","3","4","6","7","8","9","10","11"}
+    assert set(ids) == {"1","2","3","4","6","7","8","9","10","11","12"}
 
 
 def test_resolve_tests_explicit_5_still_allowed():
