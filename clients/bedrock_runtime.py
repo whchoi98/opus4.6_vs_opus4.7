@@ -1,10 +1,31 @@
-"""Wrapper around anthropic.AnthropicBedrock for the bedrock-runtime endpoint."""
+"""Wrapper around anthropic.AnthropicBedrock for the bedrock-runtime endpoint.
+
+Supports two auth paths, selected via auth_method:
+
+- "iam_role": explicitly passes frozen IAM credentials (access_key, secret_key,
+  session_token) to AnthropicBedrock, obtained from the boto3 credential chain
+  with AWS_BEARER_TOKEN_BEDROCK temporarily hidden. Prevents the SDK's internal
+  boto3 session from silently resolving to the bearer token when both are set.
+
+- "bedrock_api_key": verifies AWS_BEARER_TOKEN_BEDROCK is present, then lets
+  AnthropicBedrock use the default credential chain — which will pick up the
+  bearer token and sign requests with Authorization: Bearer <token>.
+
+Without this separation Test 4 cases 5/7/9 (auth comparison) would silently
+use the same auth as the iam_role baseline, producing misleading benchmarks.
+
+Credential caching note: for "iam_role", the frozen credentials snapshot does
+not auto-refresh. Benchmarks >1 hour on temporary IAM credentials (STS/IMDS)
+may see 403 errors. For long-running use, instantiate a fresh client.
+"""
 from __future__ import annotations
 
+import os
 import time
 from typing import Optional
 
 import anthropic
+from botocore.session import Session
 
 import config
 from clients.base import CallResult, parse_bedrock_response
@@ -50,11 +71,53 @@ def build_kwargs(
     return kwargs
 
 
+def _build_runtime_sdk_client(region: str, auth_method: str):
+    """Construct an AnthropicBedrock SDK client pinned to the specified auth method.
+
+    The SDK detects AWS_BEARER_TOKEN_BEDROCK at construction time and refuses
+    to accept explicit aws_* credentials alongside it. So for iam_role we must
+    hide the bearer token env var across the ENTIRE AnthropicBedrock() call,
+    not just during credential resolution.
+    """
+    if auth_method == "iam_role":
+        saved = os.environ.pop("AWS_BEARER_TOKEN_BEDROCK", None)
+        try:
+            creds = Session().get_credentials()
+            if creds is None:
+                raise RuntimeError(
+                    "auth_method='iam_role' requires IAM credentials "
+                    "(AWS_PROFILE / AWS_ACCESS_KEY_ID / instance role) — none found."
+                )
+            frozen = creds.get_frozen_credentials()
+            client = anthropic.AnthropicBedrock(
+                aws_region=region,
+                aws_access_key=frozen.access_key,
+                aws_secret_key=frozen.secret_key,
+                aws_session_token=frozen.token,
+            )
+        finally:
+            if saved is not None:
+                os.environ["AWS_BEARER_TOKEN_BEDROCK"] = saved
+        return client
+    if auth_method == "bedrock_api_key":
+        if not os.environ.get("AWS_BEARER_TOKEN_BEDROCK"):
+            raise RuntimeError(
+                "auth_method='bedrock_api_key' requires AWS_BEARER_TOKEN_BEDROCK "
+                "to be set in the environment."
+            )
+        # Let the SDK's default credential chain pick up the bearer token.
+        return anthropic.AnthropicBedrock(aws_region=region)
+    raise ValueError(
+        f"Runtime client auth_method must be 'iam_role' or 'bedrock_api_key'; "
+        f"got {auth_method!r}"
+    )
+
+
 class BedrockRuntimeClient:
     def __init__(self, region: str = config.BEDROCK_REGION, auth_method: str = "iam_role"):
-        self._client = anthropic.AnthropicBedrock(aws_region=region)
         self._region = region
         self._auth_method = auth_method
+        self._client = _build_runtime_sdk_client(region, auth_method)
 
     def invoke(
         self,
