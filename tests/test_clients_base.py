@@ -85,6 +85,31 @@ def test_parse_bedrock_response_counts_tool_uses():
     assert r.stop_reason == "tool_use"
 
 
+def test_callresult_ttft_optional():
+    r = CallResult(
+        input_tokens=10, output_tokens=20, latency_s=1.5,
+        thinking_chars=0, tool_calls_count=0,
+        backend="bedrock_runtime", auth_method="iam_role",
+        model_id="global.anthropic.claude-opus-4-7",
+        effort=None, prompt_label="short",
+        stop_reason="end_turn", cost_usd=0.0,
+        run_index=0, test_id="test_x",
+    )
+    assert r.ttft_s is None  # default
+
+    r2 = CallResult(
+        input_tokens=10, output_tokens=20, latency_s=2.5,
+        thinking_chars=0, tool_calls_count=0,
+        backend="bedrock_runtime", auth_method="iam_role",
+        model_id="global.anthropic.claude-opus-4-7",
+        effort=None, prompt_label="short",
+        stop_reason="end_turn", cost_usd=0.0,
+        run_index=0, test_id="test_x",
+        ttft_s=0.85,
+    )
+    assert r2.ttft_s == 0.85
+
+
 def test_parse_bedrock_response_with_cache():
     resp = {
         "usage": {

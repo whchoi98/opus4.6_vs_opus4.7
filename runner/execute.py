@@ -47,6 +47,38 @@ def _backoff_seconds(attempt: int) -> float:
     return config.RETRY_BACKOFF_BASE_S * (2 ** attempt)
 
 
+def _invoke_case(client: _Client, case: TestCase, run_index: int) -> CallResult:
+    """Dispatch to the right invoke method based on case flags."""
+    if case.streaming and case.backend == "bedrock_runtime":
+        return client.invoke_streaming(  # type: ignore[attr-defined]
+            model_id=case.model_id,
+            prompt=case.prompt,
+            prompt_label=case.prompt_label,
+            max_tokens=case.max_tokens,
+            effort=case.effort,
+            tools=case.tools,
+            run_index=run_index,
+            test_id=case.test_id,
+        )
+    invoke_kwargs = dict(
+        model_id=case.model_id,
+        prompt=case.prompt,
+        prompt_label=case.prompt_label,
+        max_tokens=case.max_tokens,
+        effort=case.effort,
+        tools=case.tools,
+        run_index=run_index,
+        test_id=case.test_id,
+    )
+    # Only bedrock_runtime supports caching and messages_override currently
+    if case.backend == "bedrock_runtime":
+        if case.use_cache:
+            invoke_kwargs["use_cache"] = True
+        if case.messages_override is not None:
+            invoke_kwargs["messages_override"] = case.messages_override
+    return client.invoke(**invoke_kwargs)
+
+
 def execute_case_with_retry(
     client: _Client,
     case: TestCase,
@@ -57,23 +89,7 @@ def execute_case_with_retry(
     last_exc: Exception | None = None
     for attempt in range(max_attempts):
         try:
-            invoke_kwargs = dict(
-                model_id=case.model_id,
-                prompt=case.prompt,
-                prompt_label=case.prompt_label,
-                max_tokens=case.max_tokens,
-                effort=case.effort,
-                tools=case.tools,
-                run_index=run_index,
-                test_id=case.test_id,
-            )
-            # Only bedrock_runtime supports caching and messages_override currently
-            if case.backend == "bedrock_runtime":
-                if case.use_cache:
-                    invoke_kwargs["use_cache"] = True
-                if case.messages_override is not None:
-                    invoke_kwargs["messages_override"] = case.messages_override
-            return client.invoke(**invoke_kwargs)
+            return _invoke_case(client, case, run_index)
         except anthropic.RateLimitError as e:
             last_exc = e
         except anthropic.APIStatusError as e:

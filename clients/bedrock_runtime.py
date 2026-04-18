@@ -95,6 +95,54 @@ class BedrockRuntimeClient:
         )
 
 
+    def invoke_streaming(
+        self,
+        *,
+        model_id: str,
+        prompt: str,
+        prompt_label: str,
+        max_tokens: int,
+        effort: Optional[str] = None,
+        tools: Optional[list[dict]] = None,
+        run_index: int = 0,
+        test_id: str = "",
+    ) -> CallResult:
+        """Invoke via streaming, measuring TTFT (time to first content event)."""
+        kwargs = build_kwargs(
+            model_id=model_id, prompt=prompt, max_tokens=max_tokens,
+            effort=effort, tools=tools,
+        )
+
+        t0 = time.perf_counter()
+        ttft = None
+        final_message = None
+
+        with self._client.messages.stream(**kwargs) as stream:
+            for event in stream:
+                if ttft is None and getattr(event, "type", None) == "content_block_delta":
+                    ttft = time.perf_counter() - t0
+            final_message = stream.get_final_message()
+
+        latency = time.perf_counter() - t0
+
+        resp_dict = {
+            "usage": {
+                "input_tokens": final_message.usage.input_tokens,
+                "output_tokens": final_message.usage.output_tokens,
+                "cache_creation_input_tokens": getattr(final_message.usage, "cache_creation_input_tokens", 0) or 0,
+                "cache_read_input_tokens": getattr(final_message.usage, "cache_read_input_tokens", 0) or 0,
+            },
+            "content": [_block_to_dict(b) for b in final_message.content],
+            "stop_reason": final_message.stop_reason,
+        }
+        return parse_bedrock_response(
+            resp_dict, latency_s=latency, backend="bedrock_runtime",
+            auth_method=self._auth_method, model_id=model_id, effort=effort,
+            prompt_label=prompt_label, run_index=run_index, test_id=test_id,
+            ttft_s=ttft,
+        )
+
+
 def _block_to_dict(block) -> dict:
     """Convert an anthropic content block to the dict shape parse_bedrock_response expects."""
     btype = getattr(block, "type", None)

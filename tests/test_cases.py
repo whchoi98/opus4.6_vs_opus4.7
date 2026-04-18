@@ -51,6 +51,18 @@ def test_mantle_cases_cover_all_prompts():
     assert "short" in prompt_labels
 
 
+from cases.streaming import cases as streaming_cases
+
+
+def test_streaming_cases():
+    cs = streaming_cases()
+    assert len(cs) == 4
+    assert {c.test_id for c in cs} == {"test_7"}
+    for c in cs:
+        assert c.streaming is True
+        assert c.backend == "bedrock_runtime"
+
+
 from cases.multiturn import cases as multiturn_cases
 
 

@@ -20,3 +20,4 @@ class TestCase:
     auth_method: str = "iam_role"
     use_cache: bool = False
     messages_override: Optional[list[dict]] = field(default=None)
+    streaming: bool = False

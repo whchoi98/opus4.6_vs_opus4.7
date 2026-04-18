@@ -30,6 +30,7 @@ class CallResult:
     # Cache telemetry (default 0 — non-caching calls leave these unset)
     cache_creation_tokens: int = 0
     cache_read_tokens: int = 0
+    ttft_s: Optional[float] = None  # Time to first token, if streaming; None for non-streaming
     error: Optional[str] = None
 
 
@@ -65,6 +66,7 @@ def parse_bedrock_response(
     prompt_label: str,
     run_index: int,
     test_id: str,
+    ttft_s: Optional[float] = None,
 ) -> CallResult:
     """Parse a Bedrock (or 1P — same shape) response JSON into a CallResult."""
     usage = resp.get("usage", {})
@@ -90,6 +92,7 @@ def parse_bedrock_response(
         tool_calls_count=tool_calls_count,
         cache_creation_tokens=cache_creation,
         cache_read_tokens=cache_read,
+        ttft_s=ttft_s,
         backend=backend,
         auth_method=auth_method,
         model_id=model_id,
