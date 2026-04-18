@@ -1,3 +1,5 @@
+import pytest
+
 import config
 
 
@@ -26,3 +28,18 @@ def test_defaults():
     assert config.BEDROCK_REGION == "us-east-1"
     assert config.INTER_CALL_DELAY_S == 0.2
     assert config.RETRY_MAX_ATTEMPTS == 3
+
+
+def test_model_key_from_id_opus_47():
+    assert config.model_key_from_id("global.anthropic.claude-opus-4-7") == "opus-4.7"
+    assert config.model_key_from_id("claude-opus-4-7") == "opus-4.7"
+
+
+def test_model_key_from_id_opus_46():
+    assert config.model_key_from_id("global.anthropic.claude-opus-4-6-v1") == "opus-4.6"
+    assert config.model_key_from_id("claude-opus-4-6") == "opus-4.6"
+
+
+def test_model_key_from_id_unknown_raises():
+    with pytest.raises(ValueError, match="Unknown model id"):
+        config.model_key_from_id("gpt-4")

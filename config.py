@@ -10,13 +10,15 @@ MODELS_3P = {
     "opus-4.6": "global.anthropic.claude-opus-4-6-v1",
 }
 
+# USD per MTok — Global inference profile pricing per Apr 16, 2026 blog.
+# Regional profiles (us./eu./jp.) cost +$0.50/in, +$2.50/out and can be added if needed.
 PRICING = {
     "opus-4.7": {"input": 5.00, "output": 25.00},
     "opus-4.6": {"input": 5.00, "output": 25.00},
 }
 
 BEDROCK_REGION = "us-east-1"
-MANTLE_URL = "https://bedrock-mantle.us-east-1.api.aws/anthropic/v1/messages"
+MANTLE_URL = f"https://bedrock-mantle.{BEDROCK_REGION}.api.aws/anthropic/v1/messages"
 
 DEFAULT_RUNS = 5
 DEFAULT_MAX_TOKENS = 1000
