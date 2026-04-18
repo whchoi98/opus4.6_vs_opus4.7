@@ -73,5 +73,5 @@ results/YYYY-MM-DD-HHMM/
 ## Getting help
 
 - See [docs/runbooks/](./runbooks/) for step-by-step procedures
-- See [docs/superpowers/findings/](./superpowers/findings/) for result interpretation
+- See [docs/test-results.md](./test-results.md) for result interpretation
 - See [docs/decisions/](./decisions/) for architectural decisions

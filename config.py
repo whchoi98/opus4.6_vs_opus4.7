@@ -10,7 +10,7 @@ MODELS_3P = {
     "opus-4.6": "global.anthropic.claude-opus-4-6-v1",
 }
 
-# USD per MTok — Global inference profile pricing per Apr 16, 2026 blog.
+# USD per MTok — Bedrock Global inference profile pricing as of 2026-04.
 # Regional profiles (us./eu./jp.) cost +$0.50/in, +$2.50/out and can be added if needed.
 PRICING = {
     "opus-4.7": {"input": 5.00, "output": 25.00},

@@ -26,8 +26,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Added
 
 - Add Test 13 multi-turn knee-point benchmark covering 11, 13, 15, 17, and 19 turns to fill the resolution gap between Test 6 and Test 10
-- Add `docs/superpowers/findings/2026-04-18-knee-point-and-quality.md` documenting the turn-20 latency step function
-- Add `docs/superpowers/findings/2026-04-18-blog-cross-reference.md` correlating measurements with the Claude Code Camp public blog post
+- Add results documentation for the turn-20 latency step function discovery
+- Add results cross-reference table correlating Test 11 tokenizer measurements with public tokenizer data
 
 ### Changed
 
@@ -75,8 +75,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Add Test 8 tool schema scaling benchmark covering 1, 5, and 20 tool schemas
 - Add `cache_creation_tokens`, `cache_read_tokens`, and `ttft_s` fields to `CallResult` with cost calculation at 1.25x write rate and 0.10x read rate
 - Add `invoke_streaming()` method to `BedrockRuntimeClient` for TTFT measurement
-- Add `docs/superpowers/findings/2026-04-18-extended-tests-results.md` documenting Tests 5–8 results
-- Add `docs/superpowers/findings/2026-04-18-extended-tests-v2-results.md` documenting Tests 9–12 results
+- Add results documentation for Tests 5–8
+- Add results documentation for Tests 9–12
 
 ### Changed
 
@@ -86,7 +86,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
-- Add initial benchmark harness reproducing the 2026-04-17 field report
+- Add initial benchmark harness for Opus 4.7 vs 4.6 comparison on Bedrock
 - Add Test 1 effort level vs token consumption benchmark across `low`, `medium`, `high`, and `max` variants
 - Add Test 2 prompt length scaling benchmark comparing short and long prompts
 - Add Test 3 parallel tool use benchmark
@@ -100,9 +100,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Add `run.py` CLI entry point with `--test`, `--runs`, `--backend`, `--dry-run`, and `--report-only` options
 - Add `.env.local` secret file loading with 600 permissions requirement
 - Add pytest suite of 43 initial unit tests covering client wrappers, case modules, stats aggregation, reporter writers, and runner dispatch
-- Add design spec at `docs/superpowers/specs/2026-04-18-opus-47-vs-46-benchmark-design.md`
-- Add implementation plan at `docs/superpowers/plans/2026-04-18-opus-47-vs-46-benchmark.md`
-- Add first-run findings at `docs/superpowers/findings/2026-04-18-first-run-divergences.md`
+- Add initial design specification
+- Add TDD-style implementation plan
+- Add first-run results documentation
 
 [Unreleased]: https://github.com/whchoi98/opus-bedrock-benchmark/compare/v0.4.0...HEAD
 [0.4.0]: https://github.com/whchoi98/opus-bedrock-benchmark/compare/v0.3.0...v0.4.0
@@ -133,8 +133,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Added
 
 - Test 13 다중 턴 knee-point 벤치마크 추가 — 11, 13, 15, 17, 19턴을 커버하여 Test 6과 Test 10 사이 해상도 공백 보완
-- `docs/superpowers/findings/2026-04-18-knee-point-and-quality.md` 추가 — 턴 20에서의 latency step function 기록
-- `docs/superpowers/findings/2026-04-18-blog-cross-reference.md` 추가 — Claude Code Camp 공개 블로그 포스트와 측정값 상호 참조
+- 턴 20에서의 지연 시간 계단 함수 발견을 기록한 결과 문서 추가
+- Test 11 토큰화 측정값과 공개 토큰화 데이터를 상호 참조하는 결과 테이블 추가
 
 ### Changed
 
@@ -182,8 +182,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Test 8 tool 스키마 스케일링 벤치마크 추가 — 1, 5, 20개 tool 스키마 커버
 - `CallResult`에 `cache_creation_tokens`, `cache_read_tokens`, `ttft_s` 필드 추가 — write 1.25배, read 0.10배 비용 계산 포함
 - `BedrockRuntimeClient.invoke_streaming()` 메서드 추가 — TTFT 측정용
-- `docs/superpowers/findings/2026-04-18-extended-tests-results.md` 추가 — Tests 5~8 결과 문서화
-- `docs/superpowers/findings/2026-04-18-extended-tests-v2-results.md` 추가 — Tests 9~12 결과 문서화
+- Tests 5~8 결과 문서 추가
+- Tests 9~12 결과 문서 추가
 
 ### Changed
 
@@ -193,7 +193,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
-- 2026-04-17 필드 리포트를 재현하는 초기 벤치마크 하네스 추가
+- Opus 4.7 대 4.6 비교를 위한 초기 Bedrock 벤치마크 하네스 추가
 - Test 1 effort 레벨 vs 토큰 소비 벤치마크 추가 — `low`, `medium`, `high`, `max` variant 커버
 - Test 2 프롬프트 길이 스케일링 벤치마크 추가 — 짧은 프롬프트와 긴 프롬프트 비교
 - Test 3 병렬 tool use 벤치마크 추가
@@ -207,9 +207,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `run.py` CLI 진입점 추가 — `--test`, `--runs`, `--backend`, `--dry-run`, `--report-only` 옵션 지원
 - `.env.local` 시크릿 파일 로딩 추가 — 600 권한 요구
 - 초기 43개 pytest 유닛 테스트 스위트 추가 — 클라이언트 래퍼, case 모듈, stats 집계, reporter writer, runner dispatch 커버
-- `docs/superpowers/specs/2026-04-18-opus-47-vs-46-benchmark-design.md`에 설계 스펙 추가
-- `docs/superpowers/plans/2026-04-18-opus-47-vs-46-benchmark.md`에 구현 계획 추가
-- `docs/superpowers/findings/2026-04-18-first-run-divergences.md`에 첫 실행 finding 추가
+- 초기 설계 명세 추가
+- TDD 방식 구현 계획 추가
+- 첫 실행 결과 문서 추가
 
 [Unreleased]: https://github.com/whchoi98/opus-bedrock-benchmark/compare/v0.4.0...HEAD
 [0.4.0]: https://github.com/whchoi98/opus-bedrock-benchmark/compare/v0.3.0...v0.4.0

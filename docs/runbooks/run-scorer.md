@@ -64,4 +64,4 @@ N/A.
 ## References
 
 - Scorer module: `scorers/judge.py`
-- V2 findings (A/B randomization): `docs/superpowers/findings/2026-04-18-blog-cross-reference.md`
+- V2 findings (A/B randomization): `docs/test-results.md`

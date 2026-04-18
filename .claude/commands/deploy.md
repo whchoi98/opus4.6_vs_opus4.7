@@ -11,7 +11,7 @@ snapshot, not deploying infrastructure.
 3. Load `.env.local` credentials.
 4. Run `python3 run.py --test all --runs 5` — ~15-20 min, ~$4.
 5. On completion, read `results/<latest>/report.md`.
-6. Suggest findings doc location: `docs/superpowers/findings/YYYY-MM-DD-<topic>.md`.
+6. Suggest findings doc location: `docs/test-results.md`.
 7. Use the `release` skill to tag and commit the snapshot.
 
 If any step fails, stop and report the failure. Do NOT auto-retry — the user

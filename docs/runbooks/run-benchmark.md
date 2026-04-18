@@ -2,7 +2,7 @@
 
 **Purpose:** Execute the 13-test Opus 4.7 vs 4.6 benchmark suite end-to-end and produce a report.
 
-**When to run:** On major changes to case modules / clients. When reproducing blog claims. Before sharing findings externally.
+**When to run:** On major changes to case modules / clients. Before sharing findings externally.
 
 **Estimated time:** 15–25 minutes
 
@@ -67,7 +67,7 @@ print(f'{len(errs)}/{len(raw[\"results\"])} errored')
 ## Verification
 
 - [ ] `results/<ts>/report.md` exists
-- [ ] Test 1 input tokens identical across 4 effort levels (key blog claim)
+- [ ] Test 1 input tokens identical across 4 effort levels (effort parameter verification)
 - [ ] No unexpected error bursts
 - [ ] Total cost within 20% of estimate
 
@@ -77,5 +77,5 @@ N/A — benchmark is read-only against Bedrock API.
 
 ## References
 
-- Design spec: `docs/superpowers/specs/2026-04-18-opus-47-vs-46-benchmark-design.md`
-- Latest findings: `docs/superpowers/findings/`
+- Design spec: `docs/test-results.md`
+- Latest findings: `docs/test-results.md`

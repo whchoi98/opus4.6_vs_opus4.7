@@ -10,8 +10,8 @@ prompt length scaling, multi-turn conversation cost, language/code tokenization,
 endpoint parity (Bedrock runtime vs Mantle), auth methods, and response quality
 (via LLM-judge). Runs with 5-run averaging and produces JSON + Markdown reports.
 
-Primary use: reproduce public blog claims about 4.7's tokenizer overhead and
-measure Bedrock-specific behavior for production decision-making.
+Primary use: measure Bedrock-specific behavior of Opus 4.7 vs 4.6 for
+production decision-making, using consistent 5-run averaging.
 
 ## Tech stack
 
@@ -61,11 +61,9 @@ measure Bedrock-specific behavior for production decision-making.
 │   └── judge.py           #   Pairwise 4.7 vs 4.6 with A/B randomization
 ├── tests/                 # pytest unit tests (62 tests)
 ├── docs/
-│   ├── superpowers/
-│   │   ├── specs/         # Design spec
-│   │   ├── plans/         # Implementation plan
-│   │   └── findings/      # 5 findings docs across 3 benchmark runs
-│   ├── architecture.md    # System architecture (this scaffold)
+│   ├── architecture.md    # System architecture (bilingual)
+│   ├── test-results.md    # Consolidated benchmark results (bilingual)
+│   ├── onboarding.md      # Developer onboarding
 │   ├── decisions/         # Architecture Decision Records (ADRs)
 │   └── runbooks/          # Operational runbooks
 └── results/               # Per-run outputs (gitignored)
@@ -111,13 +109,12 @@ cp .env.local.example .env.local   # Then fill in AWS credentials + API keys
 
 When Plan Mode exits with approved plan, ensure related docs exist or are updated:
 - New test → add to `cases/`, register in `runner/dispatch.py`, update test count in `tests/test_runner.py`
-- Finding → add to `docs/superpowers/findings/YYYY-MM-DD-<topic>.md`
-- Divergence from blog → note in `findings/*cross-reference*.md` if applicable
+- Finding → update `docs/test-results.md` consolidated report
 
 ## Known state
 
 - **62 pytest tests passing**
 - **13 benchmark tests** (Test 5 deferred — Bedrock caching returns 0 tokens)
 - **3 real benchmark runs** in `results/` directories
-- **5 findings docs** in `docs/superpowers/findings/`
+- **Consolidated results** in `docs/test-results.md` (bilingual, 608 lines)
 - Cumulative benchmark cost across all runs: ~$7.14

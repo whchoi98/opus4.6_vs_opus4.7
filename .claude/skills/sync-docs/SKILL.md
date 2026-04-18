@@ -13,7 +13,7 @@ Walk the project and ensure docs reflect the current code state.
 2. **Test counts:** verify `python3 -m pytest tests/ --collect-only -q | tail -1` matches "N passing" claims in docs.
 3. **Case count in CLAUDE.md:** verify `len(cases/*.py) - 2` (exclude base.py, prompts.py) matches "N benchmark tests" claim.
 4. **`run.py --dry-run --test all`:** copy the "Plan: X cases × N runs = M calls" number into any doc that references total call count.
-5. **Findings docs index:** ensure top-level docs link to `docs/superpowers/findings/` latest files.
+5. **Findings docs index:** ensure top-level docs link to `docs/test-results.md` latest files.
 6. **Known state section:** update cumulative cost, latest commit count.
 
 ## Quality scoring (optional)

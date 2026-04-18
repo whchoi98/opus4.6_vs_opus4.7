@@ -116,7 +116,7 @@ CLI args → preflight → dispatch(test_ids) → [for case in cases] → execut
 
 1. **TestCase가 순수 데이터인 이유**: 실행 로직 없음 → 케이스 조합·필터링·재실행 모두 무부작용
 2. **retry는 runner/execute.py에만**: 클라이언트 래퍼는 단일 책임(호출만) 유지
-3. **Mantle은 raw HTTP**: 블로그가 지적한 대로 SDK가 `bedrock` 서비스명으로 서명 → Mantle은 `bedrock-mantle` 요구
+3. **Mantle은 raw HTTP**: Anthropic SDK가 `bedrock` 서비스명으로 서명 → Mantle은 `bedrock-mantle` 요구
 4. **auth_method 명시적 분리**: boto3 credential chain이 bearer token을 자동 우선 → 두 auth path 비교 무의미해질 위험 차단
 5. **Frozen dataclass 전면 사용**: 병렬·재집계·JSON 직렬화 모두 안전
 6. **prompts.py 단일 진실 소스**: 프롬프트 변경 → 한 파일 한 곳
@@ -125,7 +125,7 @@ CLI args → preflight → dispatch(test_ids) → [for case in cases] → execut
 
 - 벤치마크 실행: [docs/runbooks/run-benchmark.md](./runbooks/run-benchmark.md)
 - Quality scorer: [docs/runbooks/run-scorer.md](./runbooks/run-scorer.md)
-- 결과 해석: [docs/superpowers/findings/](./superpowers/findings/)
+- 결과 해석: [docs/test-results.md](./test-results.md)
 
 ---
 
@@ -183,4 +183,4 @@ Python benchmark harness for Claude Opus 4.7 vs 4.6 on AWS Bedrock (Runtime + Ma
 
 - Run benchmark: [docs/runbooks/run-benchmark.md](./runbooks/run-benchmark.md)
 - Run quality scorer: [docs/runbooks/run-scorer.md](./runbooks/run-scorer.md)
-- Findings: [docs/superpowers/findings/](./superpowers/findings/)
+- Findings: [docs/test-results.md](./test-results.md)

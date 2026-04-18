@@ -11,7 +11,7 @@ not software versioning.
 ## When to release
 
 - After a full `--test all --runs 5` run completes successfully
-- When a set of findings is ready to share externally (blog, customer call)
+- When a set of findings is ready to share externally (customer call, internal review)
 - Before making breaking changes to case modules or client wrappers
 
 ## Steps
@@ -19,7 +19,7 @@ not software versioning.
 1. Verify clean state: `git status` (no uncommitted changes)
 2. Run full suite: `python3 run.py --test all --runs 5`
 3. Note results dir: `results/YYYY-MM-DD-HHMM/`
-4. Create findings doc if novel results: `docs/superpowers/findings/YYYY-MM-DD-<topic>.md`
+4. Create findings doc if novel results: `docs/test-results.md`
 5. Commit: `docs: release <label> with <N> findings`
 6. Tag: `git tag -a benchmark-YYYY-MM-DD -m "Snapshot: <brief>"`
 7. Update CLAUDE.md "Known state" section with latest cumulative cost and test count

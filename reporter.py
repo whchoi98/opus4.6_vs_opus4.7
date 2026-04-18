@@ -75,7 +75,7 @@ def write_markdown_report(
             )
         lines.append("")
 
-    lines.append("## Summary — blog claims verification")
+    lines.append("## Summary — key claim verification")
     lines.append("")
     lines.append(_render_blog_claims_section(agg))
     lines.append("")
@@ -85,7 +85,7 @@ def write_markdown_report(
 
 def _render_blog_claims_section(agg: dict[tuple, CaseAggregate]) -> str:
     out_lines = [
-        "| Claim | Blog value | Measured | Status |",
+        "| Claim | Expected | Measured | Status |",
         "|---|---|---|---|",
     ]
 
@@ -94,7 +94,7 @@ def _render_blog_claims_section(agg: dict[tuple, CaseAggregate]) -> str:
         inputs = {round(a.input_tokens_mean) for a in t1_47}
         status = "PASS" if len(inputs) == 1 else "FAIL"
         out_lines.append(
-            f"| Effort does not affect input tokens | identical | {sorted(inputs)} | {status} |"
+            f"| Effort does not affect input tokens | identical across variants | {sorted(inputs)} | {status} |"
         )
 
     t1_46 = [a for a in agg.values() if a.test_id == "test_1" and "opus-4-6" in a.model_id]
@@ -105,7 +105,7 @@ def _render_blog_claims_section(agg: dict[tuple, CaseAggregate]) -> str:
             overhead = (avg_47 - avg_46) / avg_46 * 100
             status = "PASS" if 55 <= overhead <= 70 else "CHECK"
             out_lines.append(
-                f"| Proof prompt overhead: +61% | +61% | +{overhead:.1f}% | {status} |"
+                f"| Proof prompt overhead (expected 55-70%) | 55-70% | +{overhead:.1f}% | {status} |"
             )
 
     return "\n".join(out_lines)
