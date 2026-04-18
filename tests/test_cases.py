@@ -116,6 +116,20 @@ def test_multiturn_extreme_cases():
     assert len(max_case.messages_override) == 201  # 100 pairs (200 msgs) + 1 final user
 
 
+from cases.language_code import cases as language_code_cases
+
+
+def test_language_code_cases():
+    cs = language_code_cases()
+    assert len(cs) == 8  # 4 variants × 2 models
+    assert {c.test_id for c in cs} == {"test_11"}
+    labels = sorted({c.prompt_label for c in cs})
+    assert labels == ["code", "english", "korean", "korean_code"]
+    # Each prompt non-empty
+    for c in cs:
+        assert len(c.prompt) > 200
+
+
 from cases.tools_scaling import cases as tools_scaling_cases
 
 

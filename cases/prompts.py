@@ -48,6 +48,139 @@ def process_queue(queue_url, handler, max_messages=10, wait_time=20):
 TOOL_USE_PROMPT = "Look up pricing and limits for Bedrock in us-east-1 and eu-west-1."
 
 # Tool schemas for Test 3
+# --- Test 11 prompts: language/code decomposition ---
+
+# Variant A: Pure English prose (~350 words). Technical architecture review.
+DECOMP_ENGLISH_PROMPT = """Please review the following multi-region AWS architecture for a real-time customer support platform. The workload processes inbound customer inquiries through a combination of streaming pipelines and synchronous APIs, with specific reliability requirements. The primary region is us-east-1 and the disaster-recovery standby is us-west-2 in active-passive mode. Inbound traffic arrives via a global CloudFront distribution with origin failover, terminating at a regional Application Load Balancer in each region. Requests are routed to an ECS Fargate cluster running Python services behind service discovery. Stateful session data is kept in DynamoDB global tables with streams that fan out to SNS topics consumed by Lambda functions for audit logging and downstream analytics into an S3 data lake. Authentication uses Amazon Cognito user pools federated to the company's corporate identity provider, and authorization decisions are cached in Amazon ElastiCache for Redis at the service mesh edge. Observability is provided by CloudWatch Application Signals, X-Ray distributed tracing across all synchronous hops, and a custom Managed Prometheus deployment backing Grafana dashboards for business-level metrics. The team has noticed elevated tail latencies during peak hours, occasional cold starts when new ECS tasks are launched, and a recurring issue where session tokens appear to be validated twice on some paths. Please identify the three highest-risk issues in order of severity, propose one concrete change per risk with specific AWS service adjustments, and estimate the monthly cost impact of each proposed change. Consider applicable AWS Well-Architected pillars and note any assumptions you are making about traffic patterns, team size, or acceptable tradeoffs between latency and cost. The goal is a change set that can land within a two-week sprint without introducing new SaaS vendor dependencies."""
+
+# Variant B: Pure Korean prose (~350 어절). Same technical topic in Korean.
+DECOMP_KOREAN_PROMPT = """다음 AWS 기반 멀티 리전 실시간 고객 지원 플랫폼 아키텍처를 검토하고 주요 리스크와 개선 방안을 제시해 주세요. 대상 워크로드는 고객 문의를 스트리밍 파이프라인과 동기 API 조합으로 처리하며, 명확한 안정성 요구 사항이 있습니다. 기본 리전은 us-east-1이고 재해 복구용 웜 스탠바이는 us-west-2에 액티브 패시브 모드로 구성되어 있습니다. 인바운드 트래픽은 글로벌 CloudFront 배포를 통해 원본 장애 조치와 함께 도착하며 각 리전의 Application Load Balancer에서 종료됩니다. 요청은 서비스 디스커버리를 사용하는 ECS Fargate 클러스터의 파이썬 서비스로 라우팅됩니다. 상태가 있는 세션 데이터는 DynamoDB 글로벌 테이블에 저장되며 스트림은 SNS 토픽으로 팬 아웃되고 감사 로깅과 S3 데이터 레이크로의 다운스트림 분석을 담당하는 람다 함수가 이를 소비합니다. 인증은 Amazon Cognito 사용자 풀을 통해 이루어지고 회사 기업 아이덴티티 공급자와 연동되며, 권한 결정은 서비스 메시 엣지에서 Amazon ElastiCache for Redis에 캐싱됩니다. 관측성은 CloudWatch Application Signals, 모든 동기 홉에 걸친 X-Ray 분산 추적, 그리고 비즈니스 레벨 지표를 위한 Grafana 대시보드를 뒷받침하는 맞춤형 Managed Prometheus 배포로 제공됩니다. 팀에서 피크 시간대의 높은 꼬리 지연, 새 ECS 태스크가 시작될 때 발생하는 콜드 스타트, 그리고 일부 경로에서 세션 토큰이 두 번 검증되는 반복 문제를 관찰했습니다. 심각도 순으로 가장 위험한 세 가지 이슈를 식별하고 각 리스크에 대해 구체적인 AWS 서비스 조정과 함께 변경 제안 하나를 제시하고 제안된 변경의 월간 비용 영향을 추정해 주세요. 해당되는 AWS Well-Architected 기둥을 고려하고 트래픽 패턴, 팀 규모, 지연과 비용 사이의 허용 가능한 절충점에 대해 가정하는 모든 내용을 명시해 주세요. 목표는 새로운 SaaS 벤더 종속성을 도입하지 않고 2주 스프린트 내에 배포 가능한 변경 세트입니다."""
+
+# Variant C: Pure code (~350 LOC equivalent Python — real-world async processor).
+DECOMP_CODE_PROMPT = '''Please review the following Python code for quality issues, bugs, and production concerns.
+
+```python
+import asyncio
+import json
+import logging
+import time
+from dataclasses import dataclass, field
+from typing import Any, Callable, Optional
+import boto3
+from botocore.exceptions import ClientError
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class WorkerConfig:
+    queue_url: str
+    max_in_flight: int = 10
+    visibility_timeout: int = 30
+    batch_size: int = 10
+    long_poll_seconds: int = 20
+    retry_max_attempts: int = 3
+    retry_backoff_base: float = 2.0
+    shutdown_grace_seconds: int = 60
+    observability_interval: int = 30
+
+
+@dataclass
+class WorkerStats:
+    messages_received: int = 0
+    messages_processed: int = 0
+    messages_failed: int = 0
+    messages_permanent_failures: int = 0
+    last_error: Optional[str] = None
+    started_at: float = field(default_factory=time.time)
+
+
+class AsyncSqsWorker:
+    def __init__(self, config: WorkerConfig, handler: Callable[[dict], Any]):
+        self.config = config
+        self.handler = handler
+        self.sqs = boto3.client("sqs")
+        self.stats = WorkerStats()
+        self._in_flight: set[asyncio.Task] = set()
+        self._shutdown = asyncio.Event()
+        self._semaphore = asyncio.Semaphore(config.max_in_flight)
+
+    async def run(self) -> None:
+        receiver = asyncio.create_task(self._receiver_loop())
+        monitor = asyncio.create_task(self._observability_loop())
+        await self._shutdown.wait()
+        receiver.cancel()
+        monitor.cancel()
+        await self._drain_in_flight()
+
+    async def _receiver_loop(self) -> None:
+        while not self._shutdown.is_set():
+            try:
+                resp = await asyncio.to_thread(
+                    self.sqs.receive_message,
+                    QueueUrl=self.config.queue_url,
+                    MaxNumberOfMessages=self.config.batch_size,
+                    WaitTimeSeconds=self.config.long_poll_seconds,
+                    VisibilityTimeout=self.config.visibility_timeout,
+                    MessageAttributeNames=["All"],
+                )
+                messages = resp.get("Messages", [])
+                self.stats.messages_received += len(messages)
+                for msg in messages:
+                    await self._semaphore.acquire()
+                    task = asyncio.create_task(self._process(msg))
+                    self._in_flight.add(task)
+                    task.add_done_callback(self._in_flight.discard)
+                    task.add_done_callback(lambda _: self._semaphore.release())
+            except ClientError as e:
+                self.stats.last_error = str(e)
+                logger.error(f"sqs receive failed: {e}")
+                await asyncio.sleep(self.config.retry_backoff_base)
+
+    async def _process(self, msg: dict) -> None:
+        for attempt in range(self.config.retry_max_attempts):
+            try:
+                body = json.loads(msg["Body"])
+                await asyncio.to_thread(self.handler, body)
+                await asyncio.to_thread(
+                    self.sqs.delete_message,
+                    QueueUrl=self.config.queue_url,
+                    ReceiptHandle=msg["ReceiptHandle"],
+                )
+                self.stats.messages_processed += 1
+                return
+            except Exception as e:
+                logger.warning(f"attempt {attempt} failed: {e}")
+                if attempt + 1 < self.config.retry_max_attempts:
+                    await asyncio.sleep(
+                        self.config.retry_backoff_base * (2 ** attempt)
+                    )
+        self.stats.messages_permanent_failures += 1
+
+    async def _observability_loop(self) -> None:
+        while not self._shutdown.is_set():
+            await asyncio.sleep(self.config.observability_interval)
+            logger.info(
+                f"stats: recv={self.stats.messages_received} "
+                f"proc={self.stats.messages_processed} "
+                f"fail={self.stats.messages_failed} "
+                f"in_flight={len(self._in_flight)}"
+            )
+
+    async def _drain_in_flight(self) -> None:
+        if not self._in_flight:
+            return
+        try:
+            await asyncio.wait_for(
+                asyncio.gather(*self._in_flight, return_exceptions=True),
+                timeout=self.config.shutdown_grace_seconds,
+            )
+        except asyncio.TimeoutError:
+            logger.error(f"drain timed out, {len(self._in_flight)} tasks still running")
+```
+
+Give me the top five issues by severity with specific line references.'''
+
 TOOLS_SCHEMA = [
     {
         "name": "get_bedrock_pricing",
