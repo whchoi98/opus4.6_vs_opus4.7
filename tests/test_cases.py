@@ -26,3 +26,26 @@ def test_tools_cases_count_and_tools():
     for c in cs:
         assert c.tools is not None
         assert len(c.tools) == 2
+
+
+from cases.mantle import cases as mantle_cases
+
+
+def test_mantle_cases_count_and_structure():
+    cs = mantle_cases()
+    assert len(cs) == 10
+    iam_mantle = [c for c in cs if c.backend == "bedrock_mantle" and c.auth_method == "iam_role"]
+    assert len(iam_mantle) == 4
+    api_key_cases = [c for c in cs if c.auth_method == "bedrock_api_key"]
+    assert len(api_key_cases) == 6
+    for c in cs:
+        assert "opus-4-7" in c.model_id
+
+
+def test_mantle_cases_cover_all_prompts():
+    cs = mantle_cases()
+    prompt_labels = {c.prompt_label for c in cs}
+    assert "proof" in prompt_labels
+    assert "long" in prompt_labels
+    assert "tools" in prompt_labels
+    assert "short" in prompt_labels
