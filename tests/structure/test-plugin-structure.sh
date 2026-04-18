@@ -42,11 +42,18 @@ assert_file_exists .claude/settings.json
 assert_pattern_not_found "sk-ant-api03" .claude/settings.json "no anthropic key in settings"
 assert_pattern_not_found "ABSKQm" .claude/settings.json "no bedrock key in settings"
 
-# README links to key docs
-for link in architecture.md onboarding.md findings; do
-    if grep -q "$link" README.md 2>/dev/null; then
-        pass "README references $link"
+# README must reference docs directory (bilingual README mentions docs/ layout)
+if grep -q "docs/" README.md 2>/dev/null; then
+    pass "README references docs/ layout"
+else
+    fail "README references docs/ layout" "no docs reference found"
+fi
+
+# README must have a Testing/Installation anchor
+for section in "## Installation" "## Usage" "## Testing"; do
+    if grep -q "$section" README.md 2>/dev/null; then
+        pass "README has section: $section"
     else
-        fail "README references $link" "missing link"
+        fail "README has section: $section" "section missing"
     fi
 done

@@ -23,3 +23,6 @@ dist/
 build/
 .coverage
 htmlcov/
+
+# Test fixtures with synthetic secret patterns (generated at runtime)
+tests/fixtures/
