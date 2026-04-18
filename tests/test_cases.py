@@ -84,6 +84,23 @@ def test_multiturn_cases_count_and_structure():
     assert label_counts == ["turns-1", "turns-10", "turns-3", "turns-5"]
 
 
+from cases.tool_forcing import cases as tool_forcing_cases
+
+
+def test_tool_forcing_cases():
+    cs = tool_forcing_cases()
+    assert len(cs) == 8  # 4 variants × 2 models
+    assert {c.test_id for c in cs} == {"test_9"}
+    labels = {c.prompt_label for c in cs}
+    assert labels == {"passive", "imperative", "choice-any", "choice-specific"}
+    # choice-any and choice-specific cases have tool_choice set
+    for c in cs:
+        if c.prompt_label in ("choice-any", "choice-specific"):
+            assert c.tool_choice is not None
+        else:
+            assert c.tool_choice is None
+
+
 from cases.tools_scaling import cases as tools_scaling_cases
 
 

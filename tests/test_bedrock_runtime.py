@@ -52,6 +52,17 @@ def test_build_kwargs_with_cache():
     assert msg["content"][0]["cache_control"] == {"type": "ephemeral"}
 
 
+def test_build_kwargs_with_tool_choice():
+    k = build_kwargs(
+        model_id="global.anthropic.claude-opus-4-7",
+        prompt="hi", max_tokens=100, effort=None,
+        tools=[{"name": "x", "description": "d",
+                "input_schema": {"type": "object", "properties": {}}}],
+        tool_choice={"type": "any"},
+    )
+    assert k["tool_choice"] == {"type": "any"}
+
+
 def test_build_kwargs_with_messages_override():
     msgs = [
         {"role": "user", "content": "hi"},

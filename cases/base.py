@@ -21,3 +21,4 @@ class TestCase:
     use_cache: bool = False
     messages_override: Optional[list[dict]] = field(default=None)
     streaming: bool = False
+    tool_choice: Optional[dict] = field(default=None)

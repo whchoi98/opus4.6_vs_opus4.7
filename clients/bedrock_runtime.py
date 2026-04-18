@@ -40,6 +40,7 @@ def build_kwargs(
     tools: Optional[list[dict]],
     use_cache: bool = False,
     messages_override: Optional[list[dict]] = None,
+    tool_choice: Optional[dict] = None,
 ) -> dict:
     """Build the kwargs dict for anthropic.AnthropicBedrock.messages.create.
 
@@ -65,6 +66,8 @@ def build_kwargs(
         kwargs["messages"] = [{"role": "user", "content": prompt}]
     if tools:
         kwargs["tools"] = tools
+    if tool_choice is not None:
+        kwargs["tool_choice"] = tool_choice
     if "opus-4-7" in model_id and effort:
         kwargs["thinking"] = {"type": "adaptive"}
         kwargs["extra_body"] = {"output_config": {"effort": effort}}
@@ -132,11 +135,12 @@ class BedrockRuntimeClient:
         test_id: str = "",
         use_cache: bool = False,
         messages_override: Optional[list[dict]] = None,
+        tool_choice: Optional[dict] = None,
     ) -> CallResult:
         kwargs = build_kwargs(
             model_id=model_id, prompt=prompt, max_tokens=max_tokens,
             effort=effort, tools=tools, use_cache=use_cache,
-            messages_override=messages_override,
+            messages_override=messages_override, tool_choice=tool_choice,
         )
         t0 = time.perf_counter()
         resp = self._client.messages.create(**kwargs)
@@ -169,11 +173,12 @@ class BedrockRuntimeClient:
         tools: Optional[list[dict]] = None,
         run_index: int = 0,
         test_id: str = "",
+        tool_choice: Optional[dict] = None,
     ) -> CallResult:
         """Invoke via streaming, measuring TTFT (time to first content event)."""
         kwargs = build_kwargs(
             model_id=model_id, prompt=prompt, max_tokens=max_tokens,
-            effort=effort, tools=tools,
+            effort=effort, tools=tools, tool_choice=tool_choice,
         )
 
         t0 = time.perf_counter()

@@ -70,12 +70,14 @@ def _invoke_case(client: _Client, case: TestCase, run_index: int) -> CallResult:
         run_index=run_index,
         test_id=case.test_id,
     )
-    # Only bedrock_runtime supports caching and messages_override currently
+    # Only bedrock_runtime supports caching, messages_override, and tool_choice currently
     if case.backend == "bedrock_runtime":
         if case.use_cache:
             invoke_kwargs["use_cache"] = True
         if case.messages_override is not None:
             invoke_kwargs["messages_override"] = case.messages_override
+        if case.tool_choice is not None:
+            invoke_kwargs["tool_choice"] = case.tool_choice
     return client.invoke(**invoke_kwargs)
 
 
