@@ -49,3 +49,24 @@ def test_mantle_cases_cover_all_prompts():
     assert "long" in prompt_labels
     assert "tools" in prompt_labels
     assert "short" in prompt_labels
+
+
+from cases.multiturn import cases as multiturn_cases
+
+
+def test_multiturn_cases_count_and_structure():
+    cs = multiturn_cases()
+    assert len(cs) == 8  # 4 turn counts × 2 models
+    assert {c.test_id for c in cs} == {"test_6"}
+    # All have messages_override set
+    for c in cs:
+        assert c.messages_override is not None
+        # Messages alternate user/assistant
+        for i, m in enumerate(c.messages_override):
+            expected_role = "user" if i % 2 == 0 else "assistant"
+            assert m["role"] == expected_role
+        # Last message is always user
+        assert c.messages_override[-1]["role"] == "user"
+    # Turn counts: {1, 3, 5, 10}
+    label_counts = sorted(set(c.prompt_label for c in cs))
+    assert label_counts == ["turns-1", "turns-10", "turns-3", "turns-5"]

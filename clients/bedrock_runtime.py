@@ -18,6 +18,7 @@ def build_kwargs(
     effort: Optional[str],
     tools: Optional[list[dict]],
     use_cache: bool = False,
+    messages_override: Optional[list[dict]] = None,
 ) -> dict:
     """Build the kwargs dict for anthropic.AnthropicBedrock.messages.create.
 
@@ -25,12 +26,16 @@ def build_kwargs(
     output_config.effort) and Opus 4.6 (no thinking kwarg by default).
     When use_cache=True, wraps the user message content in a list with
     cache_control={"type": "ephemeral"} to enable prompt caching.
+    When messages_override is provided, it is used verbatim as the messages
+    list (e.g. for multi-turn conversation benchmarks).
     """
     kwargs: dict = {
         "model": model_id,
         "max_tokens": max_tokens,
     }
-    if use_cache:
+    if messages_override is not None:
+        kwargs["messages"] = messages_override
+    elif use_cache:
         kwargs["messages"] = [{
             "role": "user",
             "content": [{"type": "text", "text": prompt, "cache_control": {"type": "ephemeral"}}],
@@ -63,10 +68,12 @@ class BedrockRuntimeClient:
         run_index: int = 0,
         test_id: str = "",
         use_cache: bool = False,
+        messages_override: Optional[list[dict]] = None,
     ) -> CallResult:
         kwargs = build_kwargs(
             model_id=model_id, prompt=prompt, max_tokens=max_tokens,
             effort=effort, tools=tools, use_cache=use_cache,
+            messages_override=messages_override,
         )
         t0 = time.perf_counter()
         resp = self._client.messages.create(**kwargs)

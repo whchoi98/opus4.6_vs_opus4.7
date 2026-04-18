@@ -50,3 +50,18 @@ def test_build_kwargs_with_cache():
     assert isinstance(msg["content"], list)
     assert msg["content"][0]["type"] == "text"
     assert msg["content"][0]["cache_control"] == {"type": "ephemeral"}
+
+
+def test_build_kwargs_with_messages_override():
+    msgs = [
+        {"role": "user", "content": "hi"},
+        {"role": "assistant", "content": "hello"},
+        {"role": "user", "content": "tell me a joke"},
+    ]
+    k = build_kwargs(
+        model_id="global.anthropic.claude-opus-4-7",
+        prompt="tell me a joke",  # ignored
+        max_tokens=100, effort=None, tools=None,
+        messages_override=msgs,
+    )
+    assert k["messages"] == msgs

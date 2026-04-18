@@ -67,9 +67,12 @@ def execute_case_with_retry(
                 run_index=run_index,
                 test_id=case.test_id,
             )
-            # Only bedrock_runtime supports caching currently
-            if case.backend == "bedrock_runtime" and case.use_cache:
-                invoke_kwargs["use_cache"] = True
+            # Only bedrock_runtime supports caching and messages_override currently
+            if case.backend == "bedrock_runtime":
+                if case.use_cache:
+                    invoke_kwargs["use_cache"] = True
+                if case.messages_override is not None:
+                    invoke_kwargs["messages_override"] = case.messages_override
             return client.invoke(**invoke_kwargs)
         except anthropic.RateLimitError as e:
             last_exc = e
