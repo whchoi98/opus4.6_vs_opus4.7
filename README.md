@@ -1,77 +1,90 @@
-# Opus 4.7 vs 4.6 Benchmark
+# Opus 4.7 vs 4.6 Benchmark Harness
 
-Reproduces the Apr 17, 2026 field-report comparison of Claude Opus 4.7 and
-Opus 4.6 on AWS Bedrock. Measures token overhead, latency, thinking-block
-visibility, parallel tool-use cost, and Mantle endpoint parity.
+Python harness that measures **Claude Opus 4.7 vs Opus 4.6** behavior on
+**AWS Bedrock** across 13 test dimensions, with 5-run averaging and
+structured JSON + Markdown reports.
+
+Originally built to reproduce the public "4.7 tokenizer costs" blog claims
+and extend them with auth-method, multi-turn, tool-forcing, knee-point,
+language-decomposition, and quality-judge measurements.
 
 ## Quick start
 
 ```bash
 cp .env.local.example .env.local
-# Fill in AWS_BEARER_TOKEN_BEDROCK or AWS credentials, AWS_REGION=us-east-1
-# Optionally: ANTHROPIC_API_KEY (1P tests — not supported by default)
+# Fill in AWS_BEARER_TOKEN_BEDROCK (or use AWS_PROFILE / IAM role)
+# Optional: ANTHROPIC_API_KEY (1P — currently disabled at runtime)
 
-pip install -r requirements.txt
+pip install --user -r requirements.txt
 
-python run.py --dry-run              # see the plan
-python run.py --test all --runs 5    # run everything (~15–30 min, ~$1–2)
+python3 run.py --dry-run                 # See the plan
+python3 run.py --test all --runs 5       # Full suite (~15-25 min, ~$5)
+python3 score.py --prompt-label tools    # LLM-judge quality check
 ```
+
+## What's measured
+
+| # | Test | Finding |
+|---|---|---|
+| 1 | Effort level vs input tokens | ✅ effort does NOT affect input |
+| 2 | Short vs long prompt | Overhead varies by content (+13% to +57%) |
+| 3 | Parallel tool use (baseline) | 4.7 refused tools; 4.6 used 4 |
+| 4 | Bedrock Runtime vs Mantle + auth | Mantle unreachable in test account |
+| 5 | User prompt caching | **DEFERRED** (cache tokens = 0 on Bedrock) |
+| 6 | Multi-turn 1-10 turns | 4.7 latency plateau at 4s up to 10 turns |
+| 7 | Streaming TTFT | 4.7 = 1.15s, invariant to prompt length |
+| 8 | Tool schema scaling (1/5/20) | 4.7 abandons tools at 20 tools |
+| 9 | Tool forcing (prompt vs tool_choice) | `tool_choice="any"` fixes 4.7 |
+| 10 | Multi-turn 10-100 turns | Step function at turn 20 |
+| 11 | English/Korean/code tokenization | Korean +5%, Python +29%, English +57% |
+| 12 | System prompt caching | **DEFERRED** (same as Test 5) |
+| 13 | Multi-turn knee-point (11-19) | Confirms step function at 20 |
+
+Plus a **quality scorer** (`score.py`) that pairs 4.7 vs 4.6 responses and
+asks Sonnet 4.6 to judge — with A/B randomization to mitigate position bias.
 
 ## CLI options
 
-- `--test` — `all` or comma-separated subset (`1,2,3,4`)
+### `run.py`
+
+- `--test` — `all` or comma-separated subset (`1,3,6`)
 - `--runs` — number of runs per case (default 5)
-- `--backend` — `bedrock` (default) or `1p` (currently disabled)
-- `--dry-run` — print plan only, no API calls
+- `--backend` — `bedrock` (default) or `1p` (currently blocked — no API credits)
+- `--dry-run` — print plan only
 - `--no-save-bodies` — disable per-call body dumps (default on)
 - `--report-only <dir>` — regenerate `report.md` from existing `raw.json`
 
-## Project structure
+### `score.py`
+
+- `--prompt-label` — `tools`, `short`, `proof`
+- `--runs` — number of pairwise judgements
+- `--output` — output dir
+
+## Results layout
 
 ```
-.
-├── run.py                 # CLI entry point
-├── config.py              # Model IDs, pricing, endpoints
-├── clients/               # Backend client wrappers
-│   ├── base.py            #   CallResult + response parser
-│   ├── bedrock_runtime.py #   AnthropicBedrock SDK wrapper
-│   ├── bedrock_mantle.py  #   Raw HTTP + SigV4 (service name "bedrock-mantle")
-│   └── anthropic_1p.py    #   Anthropic direct API
-├── cases/                 # Benchmark case definitions
-│   ├── base.py            #   TestCase dataclass
-│   ├── prompts.py         #   All prompts + tool schemas
-│   ├── effort.py          #   Test 1 cases
-│   ├── length.py          #   Test 2 cases
-│   ├── tools.py           #   Test 3 cases
-│   └── mantle.py          #   Test 4 cases
-├── runner/                # Orchestration
-│   ├── preflight.py       #   Auth validation
-│   ├── dispatch.py        #   Case collection
-│   └── execute.py         #   Retry + client selection
-├── stats.py               # Aggregation (mean, stdev)
-├── reporter.py            # JSON + Markdown output
-├── tests/                 # pytest unit tests (43 tests)
-└── results/               # Per-run outputs (gitignored)
-    └── YYYY-MM-DD-HHMM/
-        ├── raw.json
-        ├── aggregated.json
-        ├── report.md
-        └── calls/         # Per-call body dumps
+results/YYYY-MM-DD-HHMM/
+├── raw.json          # Every individual call
+├── aggregated.json   # Per-case mean/stdev
+├── report.md         # Human-readable summary
+└── calls/            # Per-call request body dumps
 ```
 
-## Design spec and plan
+## Documentation
 
-- `docs/superpowers/specs/2026-04-18-opus-47-vs-46-benchmark-design.md` — full design
-- `docs/superpowers/plans/2026-04-18-opus-47-vs-46-benchmark.md` — implementation plan
-- `docs/superpowers/findings/` — observed divergences from the blog
+- **Architecture:** [docs/architecture.md](./docs/architecture.md)
+- **Onboarding:** [docs/onboarding.md](./docs/onboarding.md)
+- **Design spec:** [docs/superpowers/specs/](./docs/superpowers/specs/)
+- **Implementation plan:** [docs/superpowers/plans/](./docs/superpowers/plans/)
+- **Findings:** [docs/superpowers/findings/](./docs/superpowers/findings/) — 5 docs with results interpretation
+- **Runbooks:** [docs/runbooks/](./docs/runbooks/)
+- **Decisions:** [docs/decisions/](./docs/decisions/)
 
-## Known limitations
+## Tech stack
 
-See `docs/superpowers/findings/2026-04-18-first-run-divergences.md` for divergences
-observed between our reproduction and the source blog. Key ones:
+Python 3.9+, `anthropic` SDK 0.96+, `boto3`/`botocore`, `requests`, `rich`,
+`python-dotenv`, `pytest` (62 tests).
 
-1. **Mantle endpoint requires account allowlisting** — returns HTTP 404 by default.
-2. **Opus 4.6 thinking blocks not surfaced** — our default invocation omits `thinking`
-   kwarg; to reproduce the blog's 856-char thinking output, add `thinking={"type":
-   "enabled", "budget_tokens": N}` in `clients/bedrock_runtime.build_kwargs`.
-3. **1P (`anthropic.Anthropic`) disabled** — requires Anthropic API credits.
+## License
+
+Internal project, no license declared.
