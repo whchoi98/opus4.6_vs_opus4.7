@@ -45,8 +45,13 @@ def parse_args() -> argparse.Namespace:
 
 
 def resolve_tests(test_arg: str) -> list[str]:
+    # Test 5 (prompt caching) is deferred — Bedrock does not surface cache token
+    # fields via the anthropic SDK in our current setup (all runs observed
+    # cache_creation_tokens=0, cache_read_tokens=0). Excluded from 'all' until
+    # the Bedrock cache API shape is clarified. Runnable explicitly with
+    # `--test 5` for investigation.
     if test_arg == "all":
-        return ["1", "2", "3", "4", "5", "6", "7", "8"]
+        return ["1", "2", "3", "4", "6", "7", "8"]
     ids = [t.strip() for t in test_arg.split(",")]
     for t in ids:
         if t not in ("1", "2", "3", "4", "5", "6", "7", "8"):
