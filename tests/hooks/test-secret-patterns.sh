@@ -34,9 +34,10 @@ check_allows() {
 SYNTHETIC_ANTHROPIC="sk-ant-api03-$(printf 'A%.0s' {1..80})-$(printf '0%.0s' {1..10})"
 # Bedrock bearer shape: ABSKQmVkcm9j + ≥80 base64-ish chars
 SYNTHETIC_BEDROCK="ABSKQmVkcm9j$(printf 'A%.0s' {1..90})=="
-# AWS documentation example keys
-SYNTHETIC_AKIA="AKIA-SANITIZED-SYNTHETIC"
-SYNTHETIC_ASIA="ASIA-SANITIZED-SYNTHETIC"
+# AWS key shape: AKIA/ASIA + 16 uppercase alphanumerics. Constructed at runtime
+# so no static literal matches GitHub's secret scanner pattern.
+SYNTHETIC_AKIA="$(printf 'AKIA%s\n' "$(printf 'A%.0s' {1..16})")"
+SYNTHETIC_ASIA="$(printf 'ASIA%s\n' "$(printf 'B%.0s' {1..16})")"
 
 # --- True positives — hook should block ---
 check_blocks "synthetic anthropic key" "python3 script.py --key=$SYNTHETIC_ANTHROPIC"
