@@ -34,6 +34,50 @@ _TURNS = [
 ]
 
 
+def _synth_turn(i: int) -> tuple[str, str]:
+    """Generate a synthetic (user, assistant) pair for high-turn tests.
+
+    Returns a reasonable-length chat exchange on a travel-planning theme
+    so the content is natural but easy to generate at scale.
+    """
+    topics = [
+        "food recommendations", "best photo spots", "weather concerns",
+        "packing list", "transport options", "budget breakdown",
+        "day-trip ideas", "safety tips", "local etiquette",
+        "souvenir shops", "nightlife options", "rainy-day backup plans",
+    ]
+    topic = topics[i % len(topics)]
+    user_q = (
+        f"Can you elaborate on {topic} for this trip — specifically "
+        f"anything I shouldn't miss given we've already discussed the main plan?"
+    )
+    asst_a = (
+        f"Great question about {topic}. Three specific suggestions: (1) "
+        f"prioritize the highest-rated option nearest to Sokcho's main area, "
+        f"(2) budget roughly the equivalent of one nice meal ($20–30) for this, "
+        f"and (3) time it for early afternoon to avoid the weekend crowds. "
+        f"The short version: plan ahead, budget modestly, go off-peak."
+    )
+    return user_q, asst_a
+
+
+def _build_messages_extended(n_turns: int, final_user_msg: str) -> list[dict]:
+    """Construct a messages list with n_turns back-and-forth pairs, ending with
+    a new user message. Uses the curated _TURNS list first, then falls through
+    to _synth_turn(i) for any turns beyond the curated count.
+    """
+    msgs: list[dict] = []
+    for i in range(n_turns):
+        if i < len(_TURNS):
+            user_text, asst_text = _TURNS[i]
+        else:
+            user_text, asst_text = _synth_turn(i)
+        msgs.append({"role": "user", "content": user_text})
+        msgs.append({"role": "assistant", "content": asst_text})
+    msgs.append({"role": "user", "content": final_user_msg})
+    return msgs
+
+
 def _build_messages(n_turns: int, final_user_msg: str) -> list[dict]:
     """Construct a messages list with n_turns back-and-forth pairs, ending with
     a new user message to be responded to."""

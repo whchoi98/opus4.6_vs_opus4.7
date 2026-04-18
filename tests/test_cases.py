@@ -101,6 +101,21 @@ def test_tool_forcing_cases():
             assert c.tool_choice is None
 
 
+from cases.multiturn_extreme import cases as multiturn_extreme_cases
+
+
+def test_multiturn_extreme_cases():
+    cs = multiturn_extreme_cases()
+    assert len(cs) == 10  # 5 turn counts × 2 models
+    assert {c.test_id for c in cs} == {"test_10"}
+    # Turn counts: 10, 20, 30, 50, 100
+    labels = sorted({c.prompt_label for c in cs})
+    assert labels == ["xturns-010", "xturns-020", "xturns-030", "xturns-050", "xturns-100"]
+    # Largest case has 200+ messages (100 pairs + final user message)
+    max_case = next(c for c in cs if c.prompt_label == "xturns-100")
+    assert len(max_case.messages_override) == 201  # 100 pairs (200 msgs) + 1 final user
+
+
 from cases.tools_scaling import cases as tools_scaling_cases
 
 
