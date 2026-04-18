@@ -84,8 +84,13 @@ class BedrockMantleClient:
         credentials = self._session.get_credentials()
         SigV4Auth(credentials, "bedrock-mantle", self._region).add_auth(aws_req)
 
+        # Use aws_req.body (what was signed), not the original `data` — SigV4Auth
+        # may mutate/normalize the body, and the signature must match what we send.
+        signed_body = aws_req.body if aws_req.body is not None else data
         t0 = time.perf_counter()
-        resp = requests.post(self._url, data=data, headers=dict(aws_req.headers), timeout=60)
+        resp = requests.post(
+            self._url, data=signed_body, headers=dict(aws_req.headers), timeout=60,
+        )
         latency = time.perf_counter() - t0
         resp.raise_for_status()
 
