@@ -26,3 +26,6 @@ htmlcov/
 
 # Test fixtures with synthetic secret patterns (generated at runtime)
 tests/fixtures/
+
+# AI assistant local settings
+.claude/settings.local.json

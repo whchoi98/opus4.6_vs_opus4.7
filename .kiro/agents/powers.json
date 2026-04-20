@@ -1,0 +1,25 @@
+{
+  "name": "powers",
+  "description": "Agent with all powers and skills loaded on-demand (local)",
+  "tools": [
+    "read",
+    "write",
+    "shell",
+    "aws",
+    "report",
+    "introspect",
+    "knowledge",
+    "thinking",
+    "todo",
+    "delegate",
+    "grep",
+    "glob",
+    "code",
+    "session",
+    "web_fetch",
+    "web_search"
+  ],
+  "resources": [
+    "skill://.kiro/skills/**/SKILL.md"
+  ]
+}
